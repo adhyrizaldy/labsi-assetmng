@@ -1,0 +1,11 @@
+specVersion: "v1"
+serviceId: "labsi-assetsman-service"
+location: "asia-southeast2"
+schemas:
+  - source: "./schema"
+    datasource:
+      postgresql:
+        database: "labsi-assetsman-database"
+        cloudSql:
+          instanceId: "labsi-assetsman-instance"
+connectorDirs: ["./connectors/labtrack"]

@@ -1,0 +1,409 @@
+# ─── Labs ───────────────────────────────────
+
+query ListLabs @auth(level: PUBLIC) {
+  labs(orderBy: [{ name: ASC }]) {
+    id
+    name
+    code
+    description
+    location
+    isActive
+    createdAt
+  }
+}
+
+query GetLab($id: UUID!) @auth(level: PUBLIC) {
+  lab(id: $id) {
+    id
+    name
+    code
+    description
+    location
+    isActive
+    createdAt
+  }
+}
+
+mutation CreateLab($name: String!, $code: String!, $description: String, $location: String) @auth(level: PUBLIC) {
+  lab_insert(data: {
+    name: $name
+    code: $code
+    description: $description
+    location: $location
+  })
+}
+
+mutation UpdateLab($id: UUID!, $name: String, $code: String, $description: String, $location: String, $isActive: Boolean) @auth(level: PUBLIC) {
+  lab_update(id: $id, data: {
+    name: $name
+    code: $code
+    description: $description
+    location: $location
+    isActive: $isActive
+  })
+}
+
+mutation DeleteLab($id: UUID!) @auth(level: PUBLIC) {
+  lab_delete(id: $id)
+}
+
+# ─── Assets ─────────────────────────────────
+
+query ListAssets @auth(level: PUBLIC) {
+  assets(orderBy: [{ name: ASC }]) {
+    id
+    barcode
+    barcodeSource
+    name
+    category
+    lab { id name code }
+    brand
+    model
+    location
+    condition
+    status
+    imageUrl
+    purchaseDate
+    purchasePrice
+    quantity
+    unit
+    minStock
+    currentBorrower { id displayName }
+    checkoutAt
+    overdueHours
+    notes
+    createdAt
+  }
+}
+
+query GetAssetsByLab($labId: UUID!) @auth(level: PUBLIC) {
+  assets(where: { labId: { eq: $labId } }, orderBy: [{ name: ASC }]) {
+    id
+    barcode
+    name
+    category
+    brand
+    model
+    condition
+    status
+    quantity
+    unit
+    minStock
+    currentBorrower { id displayName }
+    checkoutAt
+  }
+}
+
+query GetAssetByBarcode($barcode: String!) @auth(level: PUBLIC) {
+  assets(where: { barcode: { eq: $barcode } }, limit: 1) {
+    id
+    barcode
+    barcodeSource
+    name
+    category
+    lab { id name code }
+    brand
+    model
+    location
+    condition
+    status
+    imageUrl
+    quantity
+    unit
+    minStock
+    currentBorrower { id displayName }
+    checkoutAt
+    overdueHours
+    notes
+    createdAt
+  }
+}
+
+query GetAsset($id: UUID!) @auth(level: PUBLIC) {
+  asset(id: $id) {
+    id
+    barcode
+    barcodeSource
+    name
+    category
+    lab { id name code }
+    brand
+    model
+    location
+    condition
+    status
+    imageUrl
+    purchaseDate
+    purchasePrice
+    quantity
+    unit
+    minStock
+    currentBorrower { id displayName email }
+    checkoutAt
+    overdueHours
+    notes
+    createdAt
+    updatedAt
+  }
+}
+
+mutation CreateAsset(
+  $barcode: String!, $barcodeSource: BarcodeSource!, $name: String!,
+  $category: AssetCategory!, $labId: UUID!, $brand: String,
+  $model: String, $location: String, $condition: AssetCondition!,
+  $imageUrl: String, $purchaseDate: Date, $purchasePrice: Float,
+  $quantity: Float, $unit: String, $minStock: Float, $overdueHours: Int,
+  $notes: String
+) @auth(level: PUBLIC) {
+  asset_insert(data: {
+    barcode: $barcode
+    barcodeSource: $barcodeSource
+    name: $name
+    category: $category
+    lab: { id: $labId }
+    brand: $brand
+    model: $model
+    location: $location
+    condition: $condition
+    imageUrl: $imageUrl
+    purchaseDate: $purchaseDate
+    purchasePrice: $purchasePrice
+    quantity: $quantity
+    unit: $unit
+    minStock: $minStock
+    overdueHours: $overdueHours
+    notes: $notes
+  })
+}
+
+mutation UpdateAsset($id: UUID!, $name: String, $brand: String, $model: String, $location: String, $condition: AssetCondition, $imageUrl: String, $purchaseDate: Date, $purchasePrice: Float, $quantity: Float, $unit: String, $minStock: Float, $overdueHours: Int, $notes: String) @auth(level: PUBLIC) {
+  asset_update(id: $id, data: {
+    name: $name
+    brand: $brand
+    model: $model
+    location: $location
+    condition: $condition
+    imageUrl: $imageUrl
+    purchaseDate: $purchaseDate
+    purchasePrice: $purchasePrice
+    quantity: $quantity
+    unit: $unit
+    minStock: $minStock
+    overdueHours: $overdueHours
+    notes: $notes
+  })
+}
+
+mutation DeleteAsset($id: UUID!) @auth(level: PUBLIC) {
+  asset_delete(id: $id)
+}
+
+# ─── Asset Status Updates ───────────────────
+
+mutation CheckoutAsset($id: UUID!, $borrowerId: UUID!, $checkoutAt: Timestamp!, $status: String!) @auth(level: PUBLIC) {
+  asset_update(id: $id, data: {
+    currentBorrower: { id: $borrowerId }
+    checkoutAt: $checkoutAt
+    status: $status
+  })
+}
+
+mutation ReturnAsset($id: UUID!, $status: String!) @auth(level: PUBLIC) {
+  asset_update(id: $id, data: {
+    currentBorrower: null
+    checkoutAt: null
+    status: $status
+  })
+}
+
+mutation UpdateAssetStatus($id: UUID!, $status: String!) @auth(level: PUBLIC) {
+  asset_update(id: $id, data: {
+    status: $status
+  })
+}
+
+mutation UpdateConsumableStock($id: UUID!, $quantity: Float!, $status: String!) @auth(level: PUBLIC) {
+  asset_update(id: $id, data: {
+    quantity: $quantity
+    status: $status
+  })
+}
+
+# ─── Transactions ───────────────────────────
+
+query ListTransactions @auth(level: PUBLIC) {
+  transactions(orderBy: [{ createdAt: DESC }], limit: 50) {
+    id
+    type
+    asset { id name barcode category }
+    lab { id name code }
+    performedBy { id displayName }
+    borrower { id displayName }
+    quantity
+    unit
+    method
+    durationMinutes
+    notes
+    createdAt
+  }
+}
+
+query GetTransactionsByAsset($assetId: UUID!) @auth(level: PUBLIC) {
+  transactions(where: { assetId: { eq: $assetId } }, orderBy: [{ createdAt: DESC }]) {
+    id
+    type
+    quantity
+    unit
+    method
+    durationMinutes
+    notes
+    createdAt
+    performedBy { displayName }
+    borrower { displayName }
+  }
+}
+
+mutation CreateTransaction(
+  $type: TransactionType!, $assetId: UUID!, $labId: UUID!,
+  $performedById: UUID!, $borrowerId: UUID, $quantity: Float,
+  $unit: String, $method: TransactionMethod!, $durationMinutes: Int,
+  $notes: String
+) @auth(level: PUBLIC) {
+  transaction_insert(data: {
+    type: $type
+    asset: { id: $assetId }
+    lab: { id: $labId }
+    performedBy: { id: $performedById }
+    borrower: { id: $borrowerId }
+    quantity: $quantity
+    unit: $unit
+    method: $method
+    durationMinutes: $durationMinutes
+    notes: $notes
+  })
+}
+
+# ─── Dashboard ──────────────────────────────
+
+query GetDashboardActivity($labId: UUID) @auth(level: PUBLIC) {
+  transactions(
+    where: { labId: { eq: $labId } }
+    orderBy: [{ createdAt: DESC }]
+    limit: 20
+  ) {
+    id
+    type
+    createdAt
+    method
+    asset { id name barcode }
+    performedBy { displayName }
+  }
+}
+
+# ─── Barcode Sequence ───────────────────────
+
+query GetBarcodeSequence($labId: UUID!) @auth(level: PUBLIC) {
+  barcodeSequences(where: { labId: { eq: $labId } }, limit: 1) {
+    lab { id }
+    lastSequence
+  }
+}
+
+mutation InsertBarcodeSequence($labId: UUID!, $lastSequence: Int!) @auth(level: PUBLIC) {
+  barcodeSequence_insert(data: {
+    lab: { id: $labId }
+    lastSequence: $lastSequence
+  })
+}
+
+mutation UpdateBarcodeSequence($id: UUID!, $lastSequence: Int!) @auth(level: PUBLIC) {
+  barcodeSequence_update(id: $id, data: {
+    lastSequence: $lastSequence
+  })
+}
+
+# ─── Users ──────────────────────────────────
+
+query ListUsers @auth(level: PUBLIC) {
+  users(orderBy: [{ displayName: ASC }]) {
+    id
+    firebaseUid
+    email
+    displayName
+    role
+    roleTitle
+    phone
+    isActive
+    createdAt
+  }
+}
+
+query GetLaboranList @auth(level: PUBLIC) {
+  users(where: { role: { eq: laboran }, isActive: { eq: true } }, orderBy: [{ displayName: ASC }]) {
+    id
+    firebaseUid
+    displayName
+    roleTitle
+  }
+}
+
+# ─── Settings ───────────────────────────────
+
+query GetSettings($id: UUID!) @auth(level: PUBLIC) {
+  settings(id: $id) {
+    id
+    lab { id }
+    overdueDurationHours
+    lowStockAlertEnabled
+    telegramNotificationsEnabled
+    updatedAt
+  }
+}
+
+mutation InsertSettings($labId: UUID!, $overdueDurationHours: Int!, $lowStockAlertEnabled: Boolean!, $telegramNotificationsEnabled: Boolean!) @auth(level: PUBLIC) {
+  settings_insert(data: {
+    lab: { id: $labId }
+    overdueDurationHours: $overdueDurationHours
+    lowStockAlertEnabled: $lowStockAlertEnabled
+    telegramNotificationsEnabled: $telegramNotificationsEnabled
+  })
+}
+
+mutation UpdateSettings($id: UUID!, $overdueDurationHours: Int!, $lowStockAlertEnabled: Boolean!, $telegramNotificationsEnabled: Boolean!) @auth(level: PUBLIC) {
+  settings_update(id: $id, data: {
+    overdueDurationHours: $overdueDurationHours
+    lowStockAlertEnabled: $lowStockAlertEnabled
+    telegramNotificationsEnabled: $telegramNotificationsEnabled
+  })
+}
+
+# ─── Reports ────────────────────────────────
+
+query GetLowStockAssets($labId: UUID, $threshold: Float) @auth(level: PUBLIC) {
+  assets(where: {
+    labId: { eq: $labId }
+    category: { eq: consumable }
+    quantity: { le: $threshold }
+  }, orderBy: [{ quantity: ASC }]) {
+    id
+    name
+    barcode
+    quantity
+    unit
+    minStock
+  }
+}
+
+query GetOverdueLoans($labId: UUID) @auth(level: PUBLIC) {
+  assets(where: {
+    labId: { eq: $labId }
+    currentBorrowerId: { isNull: false }
+  }) {
+    id
+    name
+    barcode
+    checkoutAt
+    overdueHours
+    currentBorrower { id displayName }
+  }
+}

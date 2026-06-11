@@ -1,0 +1,93 @@
+enum UserRole { kepalalab admin laboran }
+enum AssetCategory { tool consumable }
+enum AssetCondition { baik cukup_baik rusak }
+enum BarcodeSource { PRODUCT GENERATED }
+enum TransactionType { STOCK_IN STOCK_OUT RETURN TRANSFER }
+enum TransactionMethod { WEB_SCAN TELEGRAM MANUAL }
+
+type Lab @table(name: "labs") {
+  id: UUID! @default(expr: "uuidV4()")
+  name: String!
+  code: String! @unique
+  description: String
+  location: String
+  isActive: Boolean! @default(value: true)
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type User @table(name: "users") {
+  id: UUID! @default(expr: "uuidV4()")
+  firebaseUid: String! @unique
+  email: String! @unique
+  displayName: String!
+  role: UserRole!
+  roleTitle: String
+  phone: String
+  telegramChatId: String
+  isActive: Boolean! @default(value: true)
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type UserLab @table(name: "user_labs", key: ["userId", "labId"]) {
+  userId: UUID!
+  labId: UUID!
+}
+
+type Asset @table(name: "assets") {
+  id: UUID! @default(expr: "uuidV4()")
+  barcode: String! @unique
+  barcodeSource: BarcodeSource!
+  name: String!
+  category: AssetCategory!
+  lab: Lab!
+  brand: String
+  model: String
+  location: String
+  condition: AssetCondition! @default(value: "baik")
+  status: String! @default(value: "Tersedia")
+  imageUrl: String
+  purchaseDate: Date
+  purchasePrice: Float
+  quantity: Float
+  unit: String
+  minStock: Float
+  currentBorrower: User
+  checkoutAt: Timestamp
+  overdueHours: Int! @default(value: 24)
+  notes: String
+  createdAt: Timestamp! @default(expr: "request.time")
+  updatedAt: Timestamp! @default(expr: "request.time")
+}
+
+type BarcodeSequence @table(name: "barcode_sequences") {
+  id: UUID! @default(expr: "uuidV4()")
+  lab: Lab!
+  lastSequence: Int! @default(value: 0)
+}
+
+type Transaction @table(name: "transactions") {
+  id: UUID! @default(expr: "uuidV4()")
+  type: TransactionType!
+  asset: Asset!
+  lab: Lab!
+  performedBy: User!
+  borrower: User
+  quantity: Float
+  unit: String
+  method: TransactionMethod! @default(value: "WEB_SCAN")
+  durationMinutes: Int
+  targetLab: Lab
+  notes: String
+  createdAt: Timestamp! @default(expr: "request.time")
+}
+
+type Settings @table(name: "settings") {
+  id: UUID! @default(expr: "uuidV4()")
+  lab: Lab!
+  overdueDurationHours: Int! @default(value: 24)
+  lowStockAlertEnabled: Boolean! @default(value: true)
+  telegramNotificationsEnabled: Boolean! @default(value: false)
+  updatedAt: Timestamp! @default(expr: "request.time")
+}

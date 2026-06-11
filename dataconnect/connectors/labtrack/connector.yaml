@@ -1,0 +1,6 @@
+connectorId: "labtrack"
+generate:
+  javascriptSdk:
+    outputDir: "../../../src/lib/dataconnect"
+    package: "@labtrack/dataconnect"
+    packageJsonDir: "../../../"
