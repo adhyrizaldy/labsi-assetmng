@@ -59,15 +59,15 @@
 
 @layer components {
   .glass-card {
-    background-color: color-mix(in srgb, white 80%, transparent);
-    backdrop-filter: blur(12px);
-    border: 1px solid color-mix(in srgb, var(--color-gray-200) 50%, transparent);
-    box-shadow: 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    background-color: color-mix(in srgb, white 95%, transparent);
+    backdrop-filter: blur(16px);
+    border: 1px solid color-mix(in srgb, var(--color-gray-200) 60%, transparent);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   }
 
   .dark .glass-card {
-    background-color: color-mix(in srgb, var(--color-gray-800) 80%, transparent);
-    border-color: color-mix(in srgb, var(--color-gray-700) 50%, transparent);
+    background-color: color-mix(in srgb, var(--color-gray-800) 95%, transparent);
+    border-color: color-mix(in srgb, var(--color-gray-700) 60%, transparent);
   }
 
   .glass-card-hover {
