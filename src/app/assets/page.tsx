@@ -80,7 +80,19 @@ export default function AssetsPage() {
     return () => { mounted = false; };
   }, [fetchAssets]);
 
-  if (!hasRole(['kepalalab', 'admin', 'laboran'])) return null;
+  if (!hasRole(['kepalalab', 'admin', 'laboran'])) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+            <Boxes className="w-8 h-8 text-gray-400" />
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">Akses Ditolak</h2>
+          <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Anda tidak memiliki izin untuk mengakses halaman ini atau belum login.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const filtered = assets.filter((a) => {
     const q = search.toLowerCase();
